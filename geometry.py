@@ -47,4 +47,10 @@ def mouse_intersects_tile(path_tile, mouse_pos):
             t, _ = result
             if t >= 0:
                 hits += 1
+    for wall in path_tile.walls:
+        result = ray_seg_intersect(p, d, wall[0].get_vector(), wall[1].get_vector())
+        if result is not None:
+            t, _ = result
+            if t >= 0:
+                hits += 1
     return hits % 2 == 1

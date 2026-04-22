@@ -69,11 +69,14 @@ class Core():
         sort_point_neighbors(all_points)
         edges = make_edges(all_points[0])
 
+        dead_edges = []
         for edge in edges[:]:
             if (edge.p1, edge.p2) in dead_pairs or (edge.p2, edge.p1) in dead_pairs:
                 edges.remove(edge)
+                dead_edges.append(edge)
 
-        self._tiles = make_tiles(edges) 
+        self._tiles = make_tiles(edges, dead_edges) 
+
         if self._tiles:
             self._ready_for_pathfinding = True
     

@@ -1,5 +1,5 @@
 from core import GAME_STATE_LOADING, GAME_STATE_MENU, GAME_STATE_PATHFINDING, GAME_STATE_SETUP, Core
-from constants import HEIGHT, POINT_RADIUS, WIDTH
+from constants import HEIGHT, POINT_RADIUS, TILE_END_COLOR, TILE_START_COLOR, WIDTH
 from geometry import mouse_intersects_tile, near_first_point
 from render import draw_active_polygon, draw_closed_polygon, draw_path_tiles, draw_text_lines, start_render
 import pygame
@@ -100,10 +100,10 @@ def draw(screen):
         draw_path_tiles(screen, core.get_path_tiles())
 
         if core.get_pathfinding_start():
-            pygame.draw.circle(screen, (0, 255, 0), core.get_pathfinding_start().center(), POINT_RADIUS * 2)
+            draw_closed_polygon(screen, core.get_pathfinding_start().polygon(), TILE_START_COLOR)
 
         if core.get_pathfinding_dest():
-            pygame.draw.circle(screen, (255, 0, 0), core.get_pathfinding_dest().center(), POINT_RADIUS * 2)
+            draw_closed_polygon(screen, core.get_pathfinding_dest().polygon(), TILE_END_COLOR)
 
 
         draw_text_lines(screen, [

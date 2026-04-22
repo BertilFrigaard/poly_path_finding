@@ -281,7 +281,7 @@ def make_edges(any_point):
     make_edge_recursively(any_point)
     return edges
 
-def make_tiles(edges):
+def make_tiles(edges, dead_edges):
     tiles = {}
     for edge in edges:
         left_tile = tiles.get(edge.left)
@@ -297,4 +297,15 @@ def make_tiles(edges):
 
         left_tile.connections.append(PathConnection(edge.p1, edge.p2, right_tile))
         right_tile.connections.append(PathConnection(edge.p1, edge.p2, left_tile))
+
+    for edge in dead_edges:
+        left_tile = tiles.get(edge.left)
+        right_tile = tiles.get(edge.right)
+
+        if left_tile:
+            left_tile.walls.append((edge.p1, edge.p2))
+        
+        if right_tile:
+            right_tile.walls.append((edge.p1, edge.p2))
+            
     return tiles.values()

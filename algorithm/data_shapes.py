@@ -38,6 +38,7 @@ class PathTile:
     def __init__(self):
         self.area = None
         self.connections = []
+        self.walls = []
 
     def center(self):
         points = [conn.p1 for conn in self.connections]
@@ -46,3 +47,36 @@ class PathTile:
         cx = (min(p.x for p in points) + max(p.x for p in points)) / 2
         cy = (min(p.y for p in points) + max(p.y for p in points)) / 2
         return (cx, cy)
+    
+    def polygon(self):
+        segments = []
+        for conn in self.connections:
+            segments.append((conn.p1, conn.p2))
+        for wall in self.walls:
+            segments.append((wall[0], wall[1]))
+
+        if not segments:
+            return []
+
+        ordered = [segments[0][0], segments[0][1]]
+        remaining = list(segments[1:])
+
+        while remaining:
+            last = ordered[-1]
+            for i, (a, b) in enumerate(remaining):
+                if a is last:
+                    ordered.append(b)
+                    remaining.pop(i)
+                    break
+                elif b is last:
+                    ordered.append(a)
+                    remaining.pop(i)
+                    break
+            else:
+                break  # disconnected — shouldn't happen on a valid tile
+
+        # Drop the duplicate closing point if the chain wrapped back to start
+        if len(ordered) > 1 and ordered[-1] is ordered[0]:
+            ordered.pop()
+
+        return [p.get_xy() for p in ordered]
