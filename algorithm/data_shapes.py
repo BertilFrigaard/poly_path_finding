@@ -38,3 +38,11 @@ class PathTile:
     def __init__(self):
         self.area = None
         self.connections = []
+
+    def center(self):
+        points = [conn.p1 for conn in self.connections]
+        if not points:
+            return None
+        cx = sum(p.x for p in points) / len(points)
+        cy = sum(p.y for p in points) / len(points)
+        return (cx, cy)

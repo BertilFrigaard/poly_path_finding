@@ -1,7 +1,7 @@
-from core import GAME_STATE_LOADING, GAME_STATE_MENU, GAME_STATE_SETUP, Core
-from constants import HEIGHT, WIDTH
-from geometry import near_first_point
-from render import draw_active_polygon, draw_closed_polygon, draw_text_lines, start_render
+from core import GAME_STATE_LOADING, GAME_STATE_MENU, GAME_STATE_PATHFINDING, GAME_STATE_SETUP, Core
+from constants import HEIGHT, POINT_RADIUS, WIDTH
+from geometry import mouse_intersects_tile, near_first_point
+from render import draw_active_polygon, draw_closed_polygon, draw_path_tiles, draw_text_lines, start_render
 import pygame
 import sys
 
@@ -17,7 +17,7 @@ def update():
             if event.key == pygame.K_ESCAPE:
                 core.set_game_state(GAME_STATE_MENU)
 
-            if core.get_game_state() == 0:
+            if core.get_game_state() == GAME_STATE_MENU:
                 if event.key == pygame.K_1:
                     core.set_game_state(GAME_STATE_SETUP)
                     
@@ -26,10 +26,31 @@ def update():
                     core.prepare_for_pathfinding()
                     core.set_game_state(GAME_STATE_MENU)
 
-            if core.get_game_state() == 1:
+                if event.key == pygame.K_3:
+                    if core.is_ready_for_pathfinding():
+                        core.set_game_state(GAME_STATE_PATHFINDING)
+
+            if core.get_game_state() == GAME_STATE_SETUP:
                 if event.key == pygame.K_RETURN:
                     core.clear_active()
                     core.set_game_state(GAME_STATE_MENU)
+
+                if event.key == pygame.K_DELETE:
+                    core.clear_shapes()
+
+            if core.get_game_state() == GAME_STATE_PATHFINDING:
+                if event.key == pygame.K_1 or event.key == pygame.K_2:
+                    hovering_tiles = [tile for tile in core.get_path_tiles() if mouse_intersects_tile(tile, pygame.mouse.get_pos())]
+                    if hovering_tiles:
+                        if event.key == pygame.K_1:
+                            core.set_pathfinding_start(hovering_tiles[0])
+                            if core.get_pathfinding_dest() == hovering_tiles[0]:
+                                core.set_pathfinding_dest(None)
+                        
+                        elif event.key == pygame.K_2:
+                            core.set_pathfinding_dest(hovering_tiles[0])
+                            if core.get_pathfinding_start() == hovering_tiles[0]:
+                                core.set_pathfinding_start(None)
 
         if event.type == pygame.MOUSEBUTTONDOWN:
             mouse_pos = pygame.mouse.get_pos()
@@ -66,11 +87,25 @@ def draw(screen):
 
         draw_text_lines(screen, [
             "Esc) Return to menu   Left Click) Make point   Right Click) Undo last point",
-            "Enter) Save and cloes"
+            "Delete) Erase all shapes   Enter) Save and cloes"
         ], (WIDTH // 2, HEIGHT - 70), 22, center=True)
 
     if core.get_game_state() == GAME_STATE_LOADING:
         draw_text_lines(screen, ["Loading..."], (WIDTH // 2, 20), 26, center=True)
+
+    if core.get_game_state() == GAME_STATE_PATHFINDING:
+        draw_path_tiles(screen, core.get_path_tiles())
+
+        if core.get_pathfinding_start():
+            pygame.draw.circle(screen, (0, 255, 0), core.get_pathfinding_start().center(), POINT_RADIUS * 2)
+
+        if core.get_pathfinding_dest():
+            pygame.draw.circle(screen, (255, 0, 0), core.get_pathfinding_dest().center(), POINT_RADIUS * 2)
+
+
+        draw_text_lines(screen, [
+            f"Esc) Return to menu   1) Set starting point    2) Set destination point   Enter) Start ({"Ready" if core.ready_to_start_pathfinding() else "Not Ready!"})"
+        ], (WIDTH // 2, HEIGHT - 70), 22, center=True)
 
 
 

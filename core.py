@@ -1,4 +1,4 @@
-from algorithm.preperation import make_division_with_rays, make_edges, make_screen_corners, make_shape_segments, make_shapes, sort_point_neighbors
+from algorithm.preperation import make_division_with_rays, make_edges, make_screen_corners, make_shape_segments, make_shapes, make_tiles, sort_point_neighbors
 
 
 GAME_STATE_MENU = 0
@@ -12,12 +12,16 @@ class Core():
         self._primitive_shapes = []
         self._game_state = GAME_STATE_MENU
         self._ready_for_pathfinding = False
+        self._tiles = []
+        self._start = None
+        self._dest = None
     
     def add_to_active(self, point):
         self._active.append(point)
     
     def pop_from_active(self):
-        self._active.pop()
+        if self._active:
+            self._active.pop()
 
     def get_active(self):
         return self._active
@@ -30,7 +34,16 @@ class Core():
     
     def make_shape_from_active(self):
         self._ready_for_pathfinding = False
+        self._start = None
+        self._dest = None
         self._primitive_shapes.append(self._active)
+        self._active = []
+
+    def clear_shapes(self):
+        self._ready_for_pathfinding = False
+        self._start = None
+        self._dest = None
+        self._primitive_shapes = []
         self._active = []
 
     def get_shapes(self):
@@ -52,6 +65,25 @@ class Core():
         collision_points = make_division_with_rays(shape_segments, screen_segments, shapes)
         all_points = collision_points + screen_points + [point for shape in shapes for point in shape.points]
         sort_point_neighbors(all_points)
-        self.edges = make_edges(all_points[0])
-        if self.edges:
+        edges = make_edges(all_points[0])
+        self._tiles = make_tiles(edges) 
+        if self._tiles:
             self._ready_for_pathfinding = True
+    
+    def get_path_tiles(self):
+        return self._tiles
+    
+    def ready_to_start_pathfinding(self):
+        return (self._dest and self._start)
+
+    def set_pathfinding_dest(self, dest):
+        self._dest = dest
+    
+    def get_pathfinding_dest(self):
+        return self._dest
+
+    def set_pathfinding_start(self, start):
+        self._start = start
+
+    def get_pathfinding_start(self):
+        return self._start

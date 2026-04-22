@@ -1,4 +1,5 @@
 from constants import SNAP_RADIUS
+import vector
 
 def near_first_point(pos, points):
     if not points:
@@ -33,3 +34,17 @@ def ray_seg_intersect(p, d, a, b):
     if -1e-9 <= s <= 1 + 1e-9:  # Hit is within the segment (with floating-point tolerance)
         return t, s  # Caller checks t >= 0 to confirm hit is in front of the ray
     return None  # Intersection point lies outside the segment
+
+def mouse_intersects_tile(path_tile, mouse_pos):
+    if not path_tile.connections:
+        return False
+    p = vector.obj(x=mouse_pos[0], y=mouse_pos[1])
+    d = vector.obj(x=1, y=0)
+    hits = 0
+    for conn in path_tile.connections:
+        result = ray_seg_intersect(p, d, conn.p1.get_vector(), conn.p2.get_vector())
+        if result is not None:
+            t, _ = result
+            if t >= 0:
+                hits += 1
+    return hits % 2 == 1
