@@ -9,9 +9,17 @@ class Incrementer:
         return self.i - 1
 
 def calculate_h(tile, destTile):
-    # Implement a check that checks for each connection and uses the closest
-    return 0
-    #return ((node.x - dest.x) ** 2 + (node.y - dest.y) ** 2) ** 0.5
+    min_dist = float("inf")
+    for conn in tile.connections:
+        mx = (conn.p1.x + conn.p2.x) / 2
+        my = (conn.p1.y + conn.p2.y) / 2
+        for dest_conn in destTile.connections:
+            dmx = (dest_conn.p1.x + dest_conn.p2.x) / 2
+            dmy = (dest_conn.p1.y + dest_conn.p2.y) / 2
+            dist = ((mx - dmx) ** 2 + (my - dmy) ** 2) ** 0.5
+            if dist < min_dist:
+                min_dist = dist
+    return min_dist if min_dist != float("inf") else 0
 
 def trace_path(dest):
     path = []
