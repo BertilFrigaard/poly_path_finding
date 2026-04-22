@@ -15,26 +15,33 @@ def update():
 
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_ESCAPE:
-                core.set_game_State(GAME_STATE_MENU)
+                core.set_game_state(GAME_STATE_MENU)
 
             if core.get_game_state() == 0:
                 if event.key == pygame.K_1:
-                    core.set_game_State(GAME_STATE_SETUP)
+                    core.set_game_state(GAME_STATE_SETUP)
+                    
+                if event.key == pygame.K_2:
+                    core.set_game_state(GAME_STATE_LOADING)
+                    core.prepare_for_pathfinding()
+                    core.set_game_state(GAME_STATE_MENU)
 
             if core.get_game_state() == 1:
-                if event.key == pygame.K_KP_ENTER:
-                    print("SAVE AND CLOSE")
+                if event.key == pygame.K_RETURN:
+                    core.clear_active()
+                    core.set_game_state(GAME_STATE_MENU)
 
         if event.type == pygame.MOUSEBUTTONDOWN:
             mouse_pos = pygame.mouse.get_pos()
-            if event.button == 1:  # left click
-                if core.get_active_length() >= 3 and near_first_point(mouse_pos, core.get_active()):
-                    core.make_shape_from_active()
-                else:
-                    core.add_to_active(mouse_pos)
+            if core.get_game_state() == GAME_STATE_SETUP:
+                if event.button == 1:  # left click
+                    if core.get_active_length() >= 3 and near_first_point(mouse_pos, core.get_active()):
+                        core.make_shape_from_active()
+                    else:
+                        core.add_to_active(mouse_pos)
 
-            if event.button == 3:  # right click
-                core.pop_from_active()
+                if event.button == 3:  # right click
+                    core.pop_from_active()
 
 
 def draw(screen):
@@ -44,7 +51,8 @@ def draw(screen):
             "Press a key to do one of the following actions",
             " ",
             "1) Goto setup where you can define the map",
-            "2) Not implemented yet",
+            "2) Prepare setup for path finding",
+            ("3) Path finding (Ready)" if core.is_ready_for_pathfinding() else "3) Path finding (Not Ready!)"),
             " ",
             "You can always return to this page by pressing Escape"
             ], (WIDTH // 2, 150), 22, center=True)
@@ -58,7 +66,7 @@ def draw(screen):
 
         draw_text_lines(screen, [
             "Esc) Return to menu   Left Click) Make point   Right Click) Undo last point",
-            "upso"
+            "Enter) Save and cloes"
         ], (WIDTH // 2, HEIGHT - 70), 22, center=True)
 
     if core.get_game_state() == GAME_STATE_LOADING:
