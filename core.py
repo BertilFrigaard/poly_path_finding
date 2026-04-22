@@ -1,3 +1,4 @@
+from algorithm.pathfinding import search_path
 from algorithm.preperation import make_division_with_rays, make_edges, make_screen_corners, make_shape_segments, make_shapes, make_tiles, sort_point_neighbors
 from constants import WIDTH, HEIGHT
 
@@ -16,6 +17,7 @@ class Core():
         self._tiles = []
         self._start = None
         self._dest = None
+        self._path = []
     
     def add_to_active(self, point):
         self._active.append(point)
@@ -84,7 +86,7 @@ class Core():
         return self._tiles
     
     def ready_to_start_pathfinding(self):
-        return (self._dest and self._start)
+        return (self._dest and self._start and not self.has_path())
 
     def set_pathfinding_dest(self, dest):
         self._dest = dest
@@ -97,3 +99,26 @@ class Core():
 
     def get_pathfinding_start(self):
         return self._start
+    
+    def do_pathfinding(self):
+        if not self.ready_to_start_pathfinding():
+            raise RuntimeError("Please check ready_to_start_pathfinding before calling do_pathfinding")
+        
+        # Ensure all tiles are ready
+        for tile in self._tiles:
+            tile.reset_search_params()
+        
+        path = search_path(self._start, self._dest)
+
+        self._path = path
+
+    def get_path(self):
+        return self._path
+    
+    def has_path(self):
+        return True if self._path else False
+    
+    def clear_path(self):
+        self._path = []
+        self._dest = None
+        self._start = None

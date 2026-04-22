@@ -1,5 +1,5 @@
 from core import GAME_STATE_LOADING, GAME_STATE_MENU, GAME_STATE_PATHFINDING, GAME_STATE_SETUP, Core
-from constants import HEIGHT, POINT_RADIUS, TILE_END_COLOR, TILE_START_COLOR, WIDTH
+from constants import HEIGHT, TILE_END_COLOR, TILE_PATH_COLOR, TILE_START_COLOR, WIDTH
 from geometry import mouse_intersects_tile, near_first_point
 from render import draw_active_polygon, draw_closed_polygon, draw_path_tiles, draw_text_lines, start_render
 import pygame
@@ -43,14 +43,26 @@ def update():
                     hovering_tiles = [tile for tile in core.get_path_tiles() if mouse_intersects_tile(tile, pygame.mouse.get_pos())]
                     if hovering_tiles:
                         if event.key == pygame.K_1:
+                            if core.has_path():
+                                core.clear_path()
                             core.set_pathfinding_start(hovering_tiles[0])
                             if core.get_pathfinding_dest() == hovering_tiles[0]:
                                 core.set_pathfinding_dest(None)
                         
                         elif event.key == pygame.K_2:
+                            if core.has_path():
+                                core.clear_path()
                             core.set_pathfinding_dest(hovering_tiles[0])
                             if core.get_pathfinding_start() == hovering_tiles[0]:
                                 core.set_pathfinding_start(None)
+
+                if event.key == pygame.K_RETURN:
+                    if not core.has_path():
+                        if core.ready_to_start_pathfinding():
+                            core.do_pathfinding()
+
+                if event.key == pygame.K_DELETE:
+                    core.clear_path()
 
         if event.type == pygame.MOUSEBUTTONDOWN:
             mouse_pos = pygame.mouse.get_pos()
@@ -97,6 +109,10 @@ def draw(screen):
         for shape in core.get_shapes():
             draw_closed_polygon(screen, shape, (200, 200, 220))
 
+        if core.has_path():
+            for tile in core.get_path():
+                draw_closed_polygon(screen, tile.polygon(), TILE_PATH_COLOR)
+
         draw_path_tiles(screen, core.get_path_tiles())
 
         if core.get_pathfinding_start():
@@ -107,7 +123,8 @@ def draw(screen):
 
 
         draw_text_lines(screen, [
-            f"Esc) Return to menu   1) Set starting point    2) Set destination point   Enter) Start ({"Ready" if core.ready_to_start_pathfinding() else "Not Ready!"})"
+            f"Esc) Return to menu   1) Set starting point    2) Set destination point",
+            f"Enter) Start ({"Ready" if core.ready_to_start_pathfinding() else "Not Ready!"})   Delete) Clear path",
         ], (WIDTH // 2, HEIGHT - 70), 22, center=True)
 
 

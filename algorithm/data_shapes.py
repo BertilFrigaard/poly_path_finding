@@ -39,6 +39,15 @@ class PathTile:
         self.area = None
         self.connections = []
         self.walls = []
+        self.reset_search_params()
+
+    def reset_search_params(self):
+        self.visited = False
+        self.parent = None
+        self.visited = False
+        self.f = float("inf")
+        self.g = float("inf")
+        self.h = 0
 
     def center(self):
         points = [conn.p1 for conn in self.connections]
