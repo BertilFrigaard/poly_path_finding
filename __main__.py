@@ -94,6 +94,9 @@ def draw(screen):
         draw_text_lines(screen, ["Loading..."], (WIDTH // 2, 20), 26, center=True)
 
     if core.get_game_state() == GAME_STATE_PATHFINDING:
+        for shape in core.get_shapes():
+            draw_closed_polygon(screen, shape, (200, 200, 220))
+
         draw_path_tiles(screen, core.get_path_tiles())
 
         if core.get_pathfinding_start():

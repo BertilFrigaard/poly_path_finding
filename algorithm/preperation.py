@@ -53,6 +53,7 @@ def make_screen_corners():
 
 ### STEP 4
 def make_division_with_rays(shape_segments, screen_segments, shapes):
+    dead_pairs = shape_segments.copy() + screen_segments.copy()
     new_points = []
     for shape in shapes:
         for i, p in enumerate(shape.points):
@@ -71,7 +72,14 @@ def make_division_with_rays(shape_segments, screen_segments, shapes):
 
             # Gennemsnitlig vektor der peger væk fra shape
             # Bemærk d ikke længere er en enheds vektor men retningen er nu gennemsnittet af u1 og u2's retning
-            d = (u1 + u2) * -1
+            cross = u1.x * u2.y - u1.y * u2.x
+
+            if cross > 0:
+                # Convex corner: average points inward, flip it
+                d = (u1 + u2) * -1
+            else:
+                # Reflex corner: average already points outward, don't flip
+                d = (u1 + u2)
 
             # Bestem alle collisions for ray (ray fra punkt p)
             collisions = []
@@ -104,7 +112,7 @@ def make_division_with_rays(shape_segments, screen_segments, shapes):
             collision_p = Point(closest[2].x, closest[2].y)
             new_points.append(collision_p)
 
-            # Fjern nu connection mellem punkt der dannede segment som ray skar i punkt closest.
+            # Fjern nu connection mellem punkter der dannede segment som ray skar i punkt closest.
             try:
                 
                 closest[0].neighbors.remove(closest[1])
@@ -127,6 +135,19 @@ def make_division_with_rays(shape_segments, screen_segments, shapes):
             collision_p.neighbors.append(p)
             collision_p.neighbors.append(closest[0])
             collision_p.neighbors.append(closest[1])
+
+            # Slet evt. fjernet dead_pair
+            if (closest[0], closest[1]) in dead_pairs:
+                dead_pairs.remove((closest[0], closest[1]))
+                # Og tilføj nye dead pairs (Forestil dig at et deadpair er blevet splittet op, derfor kommer to nye)
+                dead_pairs.append((closest[1], collision_p))
+                dead_pairs.append((closest[0], collision_p))
+
+            elif (closest[1], closest[0]) in dead_pairs:
+                dead_pairs.remove((closest[1], closest[0]))
+                # Tilføj igen nye dead pairs
+                dead_pairs.append((closest[1], collision_p))
+                dead_pairs.append((closest[0], collision_p))
 
             # Update the segment lists by removing the one hit segment as we have removed that
             # And adding the 3 newly created segments
@@ -154,7 +175,7 @@ def make_division_with_rays(shape_segments, screen_segments, shapes):
                 screen_segments.append((closest[0], collision_p))
                 screen_segments.append((closest[1], collision_p))
                 screen_segments.append((p, collision_p))
-    return new_points
+    return (new_points, dead_pairs)
 
 ### STEP 5
 def sort_point_neighbors(points):

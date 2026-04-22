@@ -19,4 +19,4 @@ PATH_TILE_CONNECTION_COLOR = (255, 140, 0)
 # Algorithm Settings
 
 # Other Settings
-SNAP_RADIUS = 5
+SNAP_RADIUS = 15

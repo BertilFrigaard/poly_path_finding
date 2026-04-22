@@ -43,6 +43,6 @@ class PathTile:
         points = [conn.p1 for conn in self.connections]
         if not points:
             return None
-        cx = sum(p.x for p in points) / len(points)
-        cy = sum(p.y for p in points) / len(points)
+        cx = (min(p.x for p in points) + max(p.x for p in points)) / 2
+        cy = (min(p.y for p in points) + max(p.y for p in points)) / 2
         return (cx, cy)

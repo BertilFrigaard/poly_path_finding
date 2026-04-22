@@ -2,7 +2,10 @@ import pygame
 from constants import BACKGROUND_COLOR, POINT_RADIUS, SHAPE_LINE_COLOR, SHAPE_POINT_COLOR, ACTIVE_LINE_COLOR, ACTIVE_POINT_COLOR, WIDTH, HEIGHT, PATH_TILE_AREA_COLOR, PATH_TILE_POINT_COLOR, PATH_TILE_CONNECTION_COLOR
 from geometry import mouse_intersects_tile
 
-def draw_closed_polygon(screen, points):
+def draw_closed_polygon(screen, points, fill_color=None):
+    if fill_color is not None and len(points) >= 3:
+        pygame.draw.polygon(screen, fill_color, points)
+
     if len(points) >= 2:
         for i in range(len(points) - 1):
             pygame.draw.line(screen, SHAPE_LINE_COLOR, points[i], points[i + 1], 2)
@@ -38,11 +41,6 @@ def draw_text_lines(screen, lines, pos, font_size=16, color=(0, 0, 0), line_spac
 
 def draw_path_tiles(screen, path_tiles):
     for tile in path_tiles:
-        if tile.area and len(tile.area) >= 2:
-            for i in range(len(tile.area) - 1):
-                pygame.draw.line(screen, PATH_TILE_AREA_COLOR, tile.area[i].get_xy(), tile.area[i + 1].get_xy(), 2)
-            pygame.draw.line(screen, PATH_TILE_AREA_COLOR, tile.area[-1].get_xy(), tile.area[0].get_xy(), 2)
-
         if mouse_intersects_tile(tile, pygame.mouse.get_pos()):
             pygame.draw.circle(screen, (155, 155, 155), tile.center(), POINT_RADIUS * 2)
 

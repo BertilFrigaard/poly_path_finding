@@ -1,4 +1,5 @@
 from algorithm.preperation import make_division_with_rays, make_edges, make_screen_corners, make_shape_segments, make_shapes, make_tiles, sort_point_neighbors
+from constants import WIDTH, HEIGHT
 
 
 GAME_STATE_MENU = 0
@@ -62,10 +63,16 @@ class Core():
         shapes = make_shapes(self._primitive_shapes)
         shape_segments = make_shape_segments(shapes)
         (screen_points, screen_segments) = make_screen_corners() 
-        collision_points = make_division_with_rays(shape_segments, screen_segments, shapes)
+
+        (collision_points, dead_pairs) = make_division_with_rays(shape_segments, screen_segments, shapes)
         all_points = collision_points + screen_points + [point for shape in shapes for point in shape.points]
         sort_point_neighbors(all_points)
         edges = make_edges(all_points[0])
+
+        for edge in edges[:]:
+            if (edge.p1, edge.p2) in dead_pairs or (edge.p2, edge.p1) in dead_pairs:
+                edges.remove(edge)
+
         self._tiles = make_tiles(edges) 
         if self._tiles:
             self._ready_for_pathfinding = True
