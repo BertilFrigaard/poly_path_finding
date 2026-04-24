@@ -8,7 +8,7 @@ class Incrementer:
         self.i += 1
         return self.i - 1
 
-def calculate_h(tile, destTile):
+""" def calculate_h(tile, destTile):
     min_dist = float("inf")
     for conn in tile.connections:
         mx, my = conn.midpoint()
@@ -17,7 +17,17 @@ def calculate_h(tile, destTile):
             dist = ((mx - dmx) ** 2 + (my - dmy) ** 2) ** 0.5
             if dist < min_dist:
                 min_dist = dist
-    return min_dist if min_dist != float("inf") else 0
+    return min_dist if min_dist != float("inf") else 0 """
+
+def calculate_h(conn, destTile):
+    min_dist = float("inf")
+    for destConn in destTile.connections:
+        cx, cy = conn.midpoint()
+        dcx, dcy = destConn.midpoint()
+        dist = ((cx - dcx) ** 2 + (cy - dcy) ** 2) ** 0.5
+        if dist < min_dist:
+            min_dist = dist
+    return min_dist
 
 def calculate_g(tile, connection):
     # Determine the path cost (Length of travel)
@@ -79,7 +89,7 @@ def search_path(start, dest):
                     return trace_path(dest)
                 else:
                     g_new = current.g + calculate_g(current, conn)
-                    h_new = calculate_h(neighbor, dest)
+                    h_new = calculate_h(conn, dest)
                     f_new = g_new + h_new
 
                     if neighbor.f == float("inf") or neighbor.f > f_new:

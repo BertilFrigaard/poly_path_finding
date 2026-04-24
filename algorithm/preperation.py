@@ -281,6 +281,7 @@ def make_edges(any_point):
     make_edge_recursively(any_point)
     return edges
 
+### STEP 8
 def make_tiles(edges, dead_edges):
     tiles = {}
     for edge in edges:
