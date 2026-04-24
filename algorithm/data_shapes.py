@@ -34,9 +34,11 @@ class PathConnection:
         self.p2 = p2
         self.toTile = toTile
 
+    def midpoint(self):
+        return ((self.p1.x + self.p2.x) / 2, (self.p1.y + self.p2.y) / 2)
+
 class PathTile:
     def __init__(self):
-        self.area = None
         self.connections = []
         self.walls = []
         self.reset_search_params()

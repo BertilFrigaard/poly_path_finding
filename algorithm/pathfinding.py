@@ -11,15 +11,32 @@ class Incrementer:
 def calculate_h(tile, destTile):
     min_dist = float("inf")
     for conn in tile.connections:
-        mx = (conn.p1.x + conn.p2.x) / 2
-        my = (conn.p1.y + conn.p2.y) / 2
+        mx, my = conn.midpoint()
         for dest_conn in destTile.connections:
-            dmx = (dest_conn.p1.x + dest_conn.p2.x) / 2
-            dmy = (dest_conn.p1.y + dest_conn.p2.y) / 2
+            dmx, dmy = dest_conn.midpoint()
             dist = ((mx - dmx) ** 2 + (my - dmy) ** 2) ** 0.5
             if dist < min_dist:
                 min_dist = dist
     return min_dist if min_dist != float("inf") else 0
+
+def calculate_g(tile, connection):
+    # Determine the path cost (Length of travel)
+    # To travel to the connection from tile
+    if tile.parent:
+        # start is the edge between tile and parent
+        previous_conn_midpoint = [conn.midpoint() for conn in tile.parent.connections if conn.toTile == tile]
+        if not previous_conn_midpoint:
+            # The first tile will land here
+            start = tile.center()
+        else:
+            start = previous_conn_midpoint[0]
+    else:
+        # This is the start tile, approximate the start
+        # to the center of the tile
+        start = tile.center()
+
+    end = connection.midpoint()
+    return ((end[0] - start[0]) ** 2 + (end[1] - start[1]) ** 2) ** 0.5
 
 def trace_path(dest):
     path = []
@@ -61,7 +78,7 @@ def search_path(start, dest):
                     neighbor.parent = current
                     return trace_path(dest)
                 else:
-                    g_new = current.g + 1.0
+                    g_new = current.g + calculate_g(current, conn)
                     h_new = calculate_h(neighbor, dest)
                     f_new = g_new + h_new
 
