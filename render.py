@@ -55,7 +55,6 @@ def start_render(update, draw):
     screen = pygame.display.set_mode((WIDTH, HEIGHT))
     pygame.display.set_caption("Program")
     clock = pygame.time.Clock()
-    font = pygame.font.SysFont("Arial", 16)
 
     while True:
         update()

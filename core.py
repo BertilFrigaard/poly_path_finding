@@ -66,7 +66,7 @@ class Core():
         shape_segments = make_shape_segments(shapes)
         (screen_points, screen_segments) = make_screen_corners() 
 
-        (collision_points, dead_pairs) = make_division_with_rays(shape_segments, screen_segments, shapes)
+        (collision_points, dead_pairs) = make_division_with_rays(shape_segments + screen_segments, shapes)
         all_points = collision_points + screen_points + [point for shape in shapes for point in shape.points]
         sort_point_neighbors(all_points)
         edges = make_edges(all_points[0])
@@ -116,7 +116,7 @@ class Core():
         return self._path
     
     def has_path(self):
-        return True if self._path else False
+        return bool(self._path)
     
     def clear_path(self):
         self._path = []

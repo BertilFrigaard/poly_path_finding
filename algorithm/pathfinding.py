@@ -1,24 +1,5 @@
 import heapq
 
-class Incrementer:
-    def __init__(self):
-        self.i = 0
-
-    def get(self):
-        self.i += 1
-        return self.i - 1
-
-""" def calculate_h(tile, destTile):
-    min_dist = float("inf")
-    for conn in tile.connections:
-        mx, my = conn.midpoint()
-        for dest_conn in destTile.connections:
-            dmx, dmy = dest_conn.midpoint()
-            dist = ((mx - dmx) ** 2 + (my - dmy) ** 2) ** 0.5
-            if dist < min_dist:
-                min_dist = dist
-    return min_dist if min_dist != float("inf") else 0 """
-
 def calculate_h(conn, destTile):
     min_dist = float("inf")
     for destConn in destTile.connections:
@@ -51,7 +32,7 @@ def calculate_g(tile, connection):
 def trace_path(dest):
     path = []
     i = dest
-    while not i == i.parent:
+    while i != i.parent:
         path.append(i)
         i = i.parent
     
@@ -71,8 +52,8 @@ def search_path(start, dest):
     start.parent = start
 
     open_list = []
-    heap_incrementer = Incrementer()
-    heapq.heappush(open_list, (0.0, heap_incrementer.get(), start))
+    heap_increment = 0
+    heapq.heappush(open_list, (0.0, heap_increment, start))
 
     while len(open_list) > 0:
 
@@ -93,7 +74,8 @@ def search_path(start, dest):
                     f_new = g_new + h_new
 
                     if neighbor.f == float("inf") or neighbor.f > f_new:
-                        heapq.heappush(open_list, (f_new, heap_incrementer.get(), neighbor))
+                        heap_increment += 1
+                        heapq.heappush(open_list, (f_new, heap_increment, neighbor))
                         neighbor.f = f_new
                         neighbor.g = g_new
                         neighbor.h = h_new

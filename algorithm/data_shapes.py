@@ -46,7 +46,6 @@ class PathTile:
     def reset_search_params(self):
         self.visited = False
         self.parent = None
-        self.visited = False
         self.f = float("inf")
         self.g = float("inf")
         self.h = 0
@@ -60,34 +59,59 @@ class PathTile:
         return (cx, cy)
     
     def polygon(self):
-        segments = []
+        # Returner en liste af sorterede punkter som danner
+        # omkredsen af arealet PathTile
+
+        # Da arealets omkreds er splittet i connections og walls er det gavnligt
+        # at samle alle segmenter som udgør omkredsen i et array
+        segments = [] # (x, y)[]
         for conn in self.connections:
             segments.append((conn.p1, conn.p2))
         for wall in self.walls:
             segments.append((wall[0], wall[1]))
 
+        # Der bude altid være segmenter, men for at undgå fejl i den
+        # senere kode griber vi det her, skulle det være sket aligevel.
         if not segments:
+            print("ERROR: PathTile should have segments, but didn't. Returned empty polygon []")
             return []
 
+        # Tag første segment ud, og tilføj de to punkter til den
+        # sorterede liste: ordered
         ordered = [segments[0][0], segments[0][1]]
+
+        # Lav en liste med de resterende segmenter
         remaining = list(segments[1:])
 
+        # Så længde der stadig er resterende segmenter
         while remaining:
+
+            # Tag det sidste segment i den sorterede liste
             last = ordered[-1]
+
+            # For hvert resterende segment
             for i, (a, b) in enumerate(remaining):
+                # Undersøg om et af punkterne a og b er lig det sidste i
+                # den sorterede række
                 if a is last:
+                    # a er sidst, og den næste i rækken må derfor være b
                     ordered.append(b)
                     remaining.pop(i)
                     break
                 elif b is last:
+                    # b er sidst, og den næste i rækken må derfor være a
                     ordered.append(a)
                     remaining.pop(i)
                     break
-            else:
-                break  # disconnected — shouldn't happen on a valid tile
+            else: # Fanger hvis for loop ikke ramte et break
+                # Segmenter af ikke sammenhængende, burde ikke ske på valid PathTile
+                print("ERROR: PathTile invalid while making polygon.")
+                break  
 
-        # Drop the duplicate closing point if the chain wrapped back to start
-        if len(ordered) > 1 and ordered[-1] is ordered[0]:
+        # Fjern nu det sidste punkt, hvis det sidste og første punkt
+        # er ens, for ikke at duplikere punkter
+        if ordered[-1] is ordered[0]:
             ordered.pop()
 
+        # Returner nu en liste (x, y)[] istedet for Point[]
         return [p.get_xy() for p in ordered]

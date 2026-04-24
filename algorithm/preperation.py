@@ -52,8 +52,17 @@ def make_screen_corners():
     return ([screen_top_left, screen_top_right, screen_bottom_left, screen_bottom_right], screen_segments)
 
 ### STEP 4
-def make_division_with_rays(shape_segments, screen_segments, shapes):
-    dead_pairs = shape_segments.copy() + screen_segments.copy()
+def make_division_with_rays(segments, shapes):
+
+    # Define helper for splitting a segment and adding a collision point on it
+    def split_segment(p1, p2, p, collision_p):
+        segments.remove((p1, p2))
+
+        segments.append((p1, collision_p))
+        segments.append((p2, collision_p))
+        segments.append((p, collision_p))
+
+    dead_pairs = segments.copy()
     new_points = []
     for shape in shapes:
         for i, p in enumerate(shape.points):
@@ -84,19 +93,10 @@ def make_division_with_rays(shape_segments, screen_segments, shapes):
             # Bestem alle collisions for ray (ray fra punkt p)
             collisions = []
 
-            for (a, b) in shape_segments:
+            for (a, b) in segments:
                 result = ray_seg_intersect(p.get_vector(), d, a.get_vector(), b.get_vector())
                 if result:
-                    t, s = result
-                    if abs(t) < 1e-6 or t < 0:
-                        continue
-                    c = p.get_vector() + t * d
-                    collisions.append((a, b, c, t))
-
-            for (a, b) in screen_segments:
-                result = ray_seg_intersect(p.get_vector(), d, a.get_vector(), b.get_vector())
-                if result:
-                    t, s = result
+                    t, _ = result
                     if abs(t) < 1e-6 or t < 0:
                         continue
                     c = p.get_vector() + t * d
@@ -105,7 +105,7 @@ def make_division_with_rays(shape_segments, screen_segments, shapes):
             # Vælg kun den tætteste collision point
             closest = None
             for collision in collisions:
-                if closest == None or closest[3] > collision[3]:
+                if closest is None or closest[3] > collision[3]:
                     closest = collision
 
             # Lav et nyt punkt i den tætteste collision
@@ -151,30 +151,11 @@ def make_division_with_rays(shape_segments, screen_segments, shapes):
 
             # Update the segment lists by removing the one hit segment as we have removed that
             # And adding the 3 newly created segments
-            if (closest[0], closest[1]) in shape_segments:
-                shape_segments.remove((closest[0], closest[1]))
+            if (closest[0], closest[1]) in segments:
+                split_segment(closest[0], closest[1], p, collision_p)
+            elif (closest[1], closest[0]) in segments:
+                split_segment(closest[1], closest[0], p, collision_p)
 
-                shape_segments.append((closest[0], collision_p))
-                shape_segments.append((closest[1], collision_p))
-                shape_segments.append((p, collision_p))
-            elif (closest[1], closest[0]) in shape_segments:
-                shape_segments.remove((closest[1], closest[0]))
-                
-                shape_segments.append((closest[0], collision_p))
-                shape_segments.append((closest[1], collision_p))
-                shape_segments.append((p, collision_p))
-            elif (closest[1], closest[0]) in screen_segments:
-                screen_segments.remove((closest[1], closest[0]))
-                
-                screen_segments.append((closest[0], collision_p))
-                screen_segments.append((closest[1], collision_p))
-                screen_segments.append((p, collision_p))
-            elif (closest[0], closest[1]) in screen_segments:
-                screen_segments.remove((closest[0], closest[1]))
-                
-                screen_segments.append((closest[0], collision_p))
-                screen_segments.append((closest[1], collision_p))
-                screen_segments.append((p, collision_p))
     return (new_points, dead_pairs)
 
 ### STEP 5
